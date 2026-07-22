@@ -1,2 +1,3 @@
 .claude/settings.local.json
-config.js
+.env
+.env.local

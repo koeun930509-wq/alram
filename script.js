@@ -225,17 +225,12 @@ stopBtn.addEventListener("click", () => {
   stopBeeping();
 });
 
-const WEATHER_LAT = 37.638495;
-const WEATHER_LON = 127.025287;
-
 async function updateWeather() {
   try {
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${WEATHER_LAT}&lon=${WEATHER_LON}&appid=${WEATHER_API_KEY}&units=metric`;
-    const res = await fetch(url);
+    const res = await fetch("/api/weather");
     if (!res.ok) throw new Error("weather request failed");
     const data = await res.json();
-    const temp = Math.round(data.main.temp);
-    weatherEl.textContent = `🌡️ ${temp}°C`;
+    weatherEl.textContent = `🌡️ ${data.temp}°C`;
   } catch {
     weatherEl.textContent = "날씨 정보를 불러올 수 없습니다.";
   }
