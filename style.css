@@ -97,7 +97,7 @@ h1 {
   padding: 10px 16px;
   border: none;
   border-radius: 10px;
-  background: #3b82f6;
+  background: #11264f;
   color: white;
   font-weight: 600;
   cursor: pointer;
@@ -105,7 +105,7 @@ h1 {
 }
 
 .alarm-form button:hover {
-  background: #2563eb;
+  background: #1a3a75;
 }
 
 .alarm-list {
@@ -169,7 +169,7 @@ h1 {
 }
 
 .toggle:checked {
-  background: #3b82f6;
+  background: #11264f;
 }
 
 .toggle::before {
