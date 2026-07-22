@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>알람 앱</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <h1>⏰ 알람 앱</h1>
+
+    <div class="date" id="date">0000년 00월 00일</div>
+    <div class="clock" id="clock">00:00:00</div>
+
+    <form id="alarm-form" class="alarm-form">
+      <input type="date" id="alarm-date" />
+      <input type="time" id="alarm-time" required />
+      <input type="text" id="alarm-label" placeholder="알람 이름 (선택)" maxlength="20" />
+      <button type="submit">알람 추가</button>
+    </form>
+    <p class="hint">날짜를 비워두면 매일 반복되는 알람으로 등록됩니다.</p>
+
+    <ul id="alarm-list" class="alarm-list"></ul>
+  </div>
+
+  <div id="ringing-overlay" class="ringing-overlay hidden">
+    <div class="ringing-box">
+      <p id="ringing-label">알람!</p>
+      <button id="stop-alarm">중지</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
