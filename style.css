@@ -50,9 +50,16 @@ h1 {
   font-size: 40px;
   font-weight: 600;
   letter-spacing: 2px;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   color: #60a5fa;
   font-variant-numeric: tabular-nums;
+}
+
+.weather {
+  text-align: center;
+  font-size: 15px;
+  color: #9ca3af;
+  margin-bottom: 24px;
 }
 
 .alarm-form {
