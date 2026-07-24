@@ -1,5 +1,6 @@
 const NAVER_NEWS_ENDPOINT = "https://openapi.naver.com/v1/search/news.json";
-const DISPLAY_COUNT = 5;
+const DEFAULT_DISPLAY_COUNT = 5;
+const MAX_DISPLAY_COUNT = 100;
 const SORT_ORDER = "date";
 
 const CORS_HEADERS = {
@@ -42,9 +43,15 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: "NAVER_CLIENT_ID/NAVER_CLIENT_SECRET이 설정되지 않았습니다." }, 500);
   }
 
+  const rawCount = body?.count;
+  const displayCount =
+    typeof rawCount === "number" && Number.isInteger(rawCount) && rawCount > 0
+      ? Math.min(rawCount, MAX_DISPLAY_COUNT)
+      : DEFAULT_DISPLAY_COUNT;
+
   const url = new URL(NAVER_NEWS_ENDPOINT);
   url.searchParams.set("query", keyword);
-  url.searchParams.set("display", String(DISPLAY_COUNT));
+  url.searchParams.set("display", String(displayCount));
   url.searchParams.set("sort", SORT_ORDER);
 
   try {

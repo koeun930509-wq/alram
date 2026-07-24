@@ -190,6 +190,10 @@ function triggerAlarm(alarm) {
   ringingLabel.textContent = alarm.label ? `⏰ ${alarm.label}` : "⏰ 알람!";
   overlay.classList.remove("hidden");
   startBeeping();
+
+  if (typeof playNewsBriefing === "function") {
+    playNewsBriefing();
+  }
 }
 
 function startBeeping() {
@@ -223,6 +227,10 @@ function stopBeeping() {
 stopBtn.addEventListener("click", () => {
   overlay.classList.add("hidden");
   stopBeeping();
+
+  if (typeof stopBriefing === "function") {
+    stopBriefing();
+  }
 });
 
 async function updateWeather() {

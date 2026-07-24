@@ -2,7 +2,7 @@
 const SUPABASE_ANON_KEY = "sb_publishable_zHbnogYy1cf7Nksso92mgA_phtXZd3p";
 
 // 정식 검색어 정책이 확정되기 전까지 사용하는 임시 키워드 (prd.md Open Questions 참고)
-const TEMP_NEWS_KEYWORD = "속보";
+const TEMP_NEWS_KEYWORD = "NC다이노스";
 
 function stripHtmlTags(str) {
   return (str || "")
@@ -24,19 +24,42 @@ function buildNewsItem(rawItem) {
   };
 }
 
-async function fetchRecentNews(keyword) {
-  const res = await fetch(SUPABASE_NEWS_FUNCTION_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-    body: JSON.stringify({ keyword }),
-  });
+const NEWS_FETCH_TIMEOUT_MS = 5000;
+
+class NewsTimeoutError extends Error {
+  constructor() {
+    super("요청 시간이 초과되었습니다.");
+    this.name = "NewsTimeoutError";
+  }
+}
+
+async function fetchRecentNews(keyword, count = 5) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), NEWS_FETCH_TIMEOUT_MS);
+
+  let res;
+  try {
+    res = await fetch(SUPABASE_NEWS_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ keyword, count }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new NewsTimeoutError();
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(data.error || "뉴스를 불러오지 못했습니다.");
+    throw new Error(data.error || "뉴스를 불러올 수 없습니다.");
   }
 
   return data;
@@ -138,6 +161,30 @@ function renderNewsError(message) {
   listEl.appendChild(errorEl);
 }
 
+function renderNewsTimeout(refreshBtn) {
+  const listEl = document.getElementById("news-list");
+  if (!listEl) return;
+
+  listEl.innerHTML = "";
+  listEl.style.maxHeight = "";
+
+  const wrapperEl = document.createElement("li");
+  wrapperEl.className = "news-error-msg";
+
+  const messageEl = document.createElement("p");
+  messageEl.textContent = "요청 시간이 초과되었습니다.";
+
+  const retryBtn = document.createElement("button");
+  retryBtn.type = "button";
+  retryBtn.className = "news-retry-btn";
+  retryBtn.textContent = "재시도";
+  retryBtn.addEventListener("click", () => loadNews(refreshBtn));
+
+  wrapperEl.appendChild(messageEl);
+  wrapperEl.appendChild(retryBtn);
+  listEl.appendChild(wrapperEl);
+}
+
 async function loadNews(refreshBtn) {
   const labelEl = document.getElementById("news-refresh-label");
   refreshBtn.disabled = true;
@@ -148,19 +195,90 @@ async function loadNews(refreshBtn) {
     const items = (data.items || []).map(buildNewsItem);
     renderNewsList(items);
   } catch (err) {
-    renderNewsError("뉴스를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+    if (err instanceof NewsTimeoutError) {
+      renderNewsTimeout(refreshBtn);
+    } else {
+      renderNewsError("뉴스를 불러올 수 없습니다.");
+    }
   } finally {
     refreshBtn.disabled = false;
     if (labelEl) labelEl.textContent = "새로고침";
   }
 }
 
+const ALARM_NEWS_COUNT = 3;
+const BRIEFING_ORDINALS = ["첫번째", "두번째", "세번째", "네번째", "다섯번째"];
+
+function buildBriefingText(items) {
+  return items
+    .map((item, i) => {
+      const ordinal = BRIEFING_ORDINALS[i] || `${i + 1}번째`;
+      return `${ordinal} 뉴스, ${stripHtmlTags(item.title)}.`;
+    })
+    .join(" ");
+}
+
+function renderNewsBriefing(items) {
+  const briefingEl = document.getElementById("news-briefing");
+  if (!briefingEl) return;
+
+  briefingEl.innerHTML = "";
+
+  items.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "news-briefing-card";
+    card.textContent = stripHtmlTags(item.title);
+    briefingEl.appendChild(card);
+  });
+}
+
+function speakBriefing(text) {
+  // Web Speech API 미지원 브라우저에서는 음성 재생만 건너뛰고 텍스트 카드는 그대로 유지한다
+  if (!("speechSynthesis" in window)) return;
+
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "ko-KR";
+  speechSynthesis.speak(utterance);
+}
+
+function stopBriefing() {
+  if ("speechSynthesis" in window) {
+    speechSynthesis.cancel();
+  }
+}
+
+function clearNewsBriefing() {
+  const briefingEl = document.getElementById("news-briefing");
+  if (briefingEl) briefingEl.innerHTML = "";
+}
+
+async function playNewsBriefing() {
+  try {
+    const data = await fetchRecentNews(TEMP_NEWS_KEYWORD, ALARM_NEWS_COUNT);
+    const items = (data.items || []).map(buildNewsItem);
+    if (items.length === 0) {
+      clearNewsBriefing();
+      return;
+    }
+
+    renderNewsBriefing(items);
+    speakBriefing(buildBriefingText(items));
+  } catch (err) {
+    // 뉴스 API 호출 실패 시 브리핑만 생략하고, 알람음(script.js)은 이 함수와 무관하게 계속 울린다(CLAUDE.md NFR-3)
+    clearNewsBriefing();
+  }
+}
+
 function initNewsPanel() {
   const toggleBtn = document.getElementById("news-toggle-btn");
+  const toggleLabelEl = document.getElementById("news-toggle-label");
   const panelEl = document.getElementById("news-panel");
   const arrowEl = document.getElementById("news-toggle-arrow");
   const refreshBtn = document.getElementById("news-refresh-btn");
   if (!toggleBtn || !panelEl || !refreshBtn) return;
+
+  if (toggleLabelEl) toggleLabelEl.textContent = `${TEMP_NEWS_KEYWORD} 뉴스`;
 
   toggleBtn.addEventListener("click", () => {
     const isHidden = panelEl.classList.contains("hidden");
