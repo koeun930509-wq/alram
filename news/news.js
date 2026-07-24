@@ -1,0 +1,176 @@
+// Supabase anon(publishable) key — 공개 노출을 위해 설계된 키라 프론트엔드에 두어도 안전함
+const SUPABASE_ANON_KEY = "sb_publishable_zHbnogYy1cf7Nksso92mgA_phtXZd3p";
+
+// 정식 검색어 정책이 확정되기 전까지 사용하는 임시 키워드 (prd.md Open Questions 참고)
+const TEMP_NEWS_KEYWORD = "속보";
+
+function stripHtmlTags(str) {
+  return (str || "")
+    .replace(/<\/?b>/g, "")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&#39;/g, "'");
+}
+
+function buildNewsItem(rawItem) {
+  return {
+    title: rawItem.title,
+    description: rawItem.description,
+    link: rawItem.originallink || rawItem.link,
+    pubDate: rawItem.pubDate,
+  };
+}
+
+async function fetchRecentNews(keyword) {
+  const res = await fetch(SUPABASE_NEWS_FUNCTION_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({ keyword }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || "뉴스를 불러오지 못했습니다.");
+  }
+
+  return data;
+}
+
+function buildNewsCard(item) {
+  const card = document.createElement("li");
+  card.className = "news-card";
+
+  const title = document.createElement("h3");
+  title.className = "news-card-title";
+  title.textContent = stripHtmlTags(item.title);
+
+  const description = document.createElement("p");
+  description.className = "news-card-description";
+  description.textContent = stripHtmlTags(item.description);
+
+  const meta = document.createElement("div");
+  meta.className = "news-card-meta";
+
+  const pubDate = document.createElement("span");
+  pubDate.className = "news-card-date";
+  pubDate.textContent = item.pubDate;
+
+  const link = document.createElement("a");
+  link.className = "news-card-link";
+  link.href = item.link;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = "원문보기";
+
+  meta.appendChild(pubDate);
+  meta.appendChild(link);
+
+  card.appendChild(title);
+  card.appendChild(description);
+  card.appendChild(meta);
+
+  return card;
+}
+
+const NEWS_VISIBLE_COUNT = 2;
+
+function renderNewsList(items) {
+  const listEl = document.getElementById("news-list");
+  if (!listEl) return;
+
+  listEl.innerHTML = "";
+  listEl.style.maxHeight = "";
+
+  if (!items || items.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "news-empty-msg";
+    empty.textContent = "표시할 뉴스가 없습니다.";
+    listEl.appendChild(empty);
+    return;
+  }
+
+  items.forEach((item) => {
+    listEl.appendChild(buildNewsCard(item));
+  });
+
+  applyNewsListVisibleHeight();
+}
+
+function applyNewsListVisibleHeight() {
+  const listEl = document.getElementById("news-list");
+  if (!listEl) return;
+
+  const cards = listEl.querySelectorAll(".news-card");
+  if (cards.length <= NEWS_VISIBLE_COUNT) {
+    listEl.style.maxHeight = "";
+    return;
+  }
+
+  // 패널이 접혀 있으면(display:none) 카드 높이가 0으로 측정되므로 계산을 건너뜀 —
+  // 패널을 펼칠 때 initNewsPanel에서 다시 호출해 정확한 높이로 재계산한다.
+  if (listEl.offsetParent === null) return;
+
+  const gap = parseFloat(getComputedStyle(listEl).rowGap) || 0;
+  let visibleHeight = 0;
+  for (let i = 0; i < NEWS_VISIBLE_COUNT; i++) {
+    visibleHeight += cards[i].getBoundingClientRect().height;
+    if (i < NEWS_VISIBLE_COUNT - 1) visibleHeight += gap;
+  }
+  listEl.style.maxHeight = `${visibleHeight}px`;
+}
+
+function renderNewsError(message) {
+  const listEl = document.getElementById("news-list");
+  if (!listEl) return;
+
+  listEl.innerHTML = "";
+  listEl.style.maxHeight = "";
+
+  const errorEl = document.createElement("li");
+  errorEl.className = "news-error-msg";
+  errorEl.textContent = message;
+  listEl.appendChild(errorEl);
+}
+
+async function loadNews(refreshBtn) {
+  const labelEl = document.getElementById("news-refresh-label");
+  refreshBtn.disabled = true;
+  if (labelEl) labelEl.textContent = "불러오는 중...";
+
+  try {
+    const data = await fetchRecentNews(TEMP_NEWS_KEYWORD);
+    const items = (data.items || []).map(buildNewsItem);
+    renderNewsList(items);
+  } catch (err) {
+    renderNewsError("뉴스를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+  } finally {
+    refreshBtn.disabled = false;
+    if (labelEl) labelEl.textContent = "새로고침";
+  }
+}
+
+function initNewsPanel() {
+  const toggleBtn = document.getElementById("news-toggle-btn");
+  const panelEl = document.getElementById("news-panel");
+  const arrowEl = document.getElementById("news-toggle-arrow");
+  const refreshBtn = document.getElementById("news-refresh-btn");
+  if (!toggleBtn || !panelEl || !refreshBtn) return;
+
+  toggleBtn.addEventListener("click", () => {
+    const isHidden = panelEl.classList.contains("hidden");
+    panelEl.classList.toggle("hidden", !isHidden);
+    arrowEl?.classList.toggle("open", isHidden);
+    if (isHidden) applyNewsListVisibleHeight();
+  });
+
+  refreshBtn.addEventListener("click", () => loadNews(refreshBtn));
+  loadNews(refreshBtn);
+}
+
+initNewsPanel();

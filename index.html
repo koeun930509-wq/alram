@@ -5,12 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>알람 앱</title>
 <link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="news/news.css" />
 </head>
 <body>
   <div class="bg-overlay"></div>
 
   <div class="app">
-    <h1>⏰ 알람 앱</h1>
+    <h1>
+      <svg class="title-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" />
+        <path d="M12 9v4l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M5 3 2 6M19 3l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      알람 앱
+    </h1>
 
     <div class="date" id="date">0000년 00월 00일</div>
     <div class="clock" id="clock">00:00:00</div>
@@ -25,6 +33,27 @@
     <p class="hint">날짜를 비워두면 매일 반복되는 알람으로 등록됩니다.</p>
 
     <ul id="alarm-list" class="alarm-list"></ul>
+
+    <button type="button" id="news-toggle-btn" class="news-toggle-btn">
+      <svg class="news-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="3" y="4" width="14" height="16" rx="1" stroke="currentColor" stroke-width="2" />
+        <path d="M7 8h6M7 12h6M7 16h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <path d="M17 8h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <span>최근뉴스</span>
+      <span id="news-toggle-arrow" class="news-toggle-arrow">▼</span>
+    </button>
+    <div id="news-panel" class="news-panel hidden">
+      <button type="button" id="news-refresh-btn" class="news-refresh-btn">
+        <svg class="news-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M4 4v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M20 20v-5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M5.5 9A7 7 0 0 1 19 8M18.5 15A7 7 0 0 1 5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span id="news-refresh-label">새로고침</span>
+      </button>
+      <ul id="news-list" class="news-list"></ul>
+    </div>
   </div>
 
   <div id="ringing-overlay" class="ringing-overlay hidden">
@@ -34,6 +63,8 @@
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script src="script.js"></script>
+  <script src="news/news.js"></script>
 </body>
 </html>
