@@ -128,6 +128,9 @@
   font-size: 15px;
   font-weight: 600;
   color: #f3f4f6;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .news-card-description {

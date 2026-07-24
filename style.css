@@ -130,12 +130,30 @@ h1 {
 .alarm-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 4px 0 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 320px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 transparent;
+}
+
+.alarm-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.alarm-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.alarm-list::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 999px;
+}
+
+.alarm-list::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }
 
 .alarm-item {

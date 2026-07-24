@@ -43,10 +43,28 @@ function formatDateLabel(dateKey) {
   return `${yyyy}년 ${mm}월 ${dd}일 (${weekday})`;
 }
 
+const ALARM_VISIBLE_COUNT = 2;
+
+function applyAlarmListVisibleHeight() {
+  listEl.style.maxHeight = "";
+
+  const items = listEl.querySelectorAll(".alarm-item");
+  if (items.length <= ALARM_VISIBLE_COUNT) return;
+
+  const gap = parseFloat(getComputedStyle(listEl).rowGap) || 0;
+  let visibleHeight = 0;
+  for (let i = 0; i < ALARM_VISIBLE_COUNT; i++) {
+    visibleHeight += items[i].getBoundingClientRect().height;
+    if (i < ALARM_VISIBLE_COUNT - 1) visibleHeight += gap;
+  }
+  listEl.style.maxHeight = `${visibleHeight}px`;
+}
+
 function renderAlarms() {
   listEl.innerHTML = "";
 
   if (alarms.length === 0) {
+    listEl.style.maxHeight = "";
     const empty = document.createElement("li");
     empty.className = "empty-msg";
     empty.textContent = "등록된 알람이 없습니다.";
@@ -115,6 +133,8 @@ function renderAlarms() {
     li.appendChild(actions);
     listEl.appendChild(li);
   });
+
+  applyAlarmListVisibleHeight();
 }
 
 form.addEventListener("submit", (e) => {
