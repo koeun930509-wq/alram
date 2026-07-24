@@ -186,9 +186,8 @@ function renderNewsTimeout(refreshBtn) {
 }
 
 async function loadNews(refreshBtn) {
-  const labelEl = document.getElementById("news-refresh-label");
   refreshBtn.disabled = true;
-  if (labelEl) labelEl.textContent = "불러오는 중...";
+  refreshBtn.classList.add("loading");
 
   try {
     const data = await fetchRecentNews(TEMP_NEWS_KEYWORD);
@@ -202,7 +201,7 @@ async function loadNews(refreshBtn) {
     }
   } finally {
     refreshBtn.disabled = false;
-    if (labelEl) labelEl.textContent = "새로고침";
+    refreshBtn.classList.remove("loading");
   }
 }
 

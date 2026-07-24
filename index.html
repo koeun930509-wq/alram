@@ -34,24 +34,25 @@
 
     <ul id="alarm-list" class="alarm-list"></ul>
 
-    <button type="button" id="news-toggle-btn" class="news-toggle-btn">
-      <svg class="news-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect x="3" y="4" width="14" height="16" rx="1" stroke="currentColor" stroke-width="2" />
-        <path d="M7 8h6M7 12h6M7 16h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        <path d="M17 8h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-      </svg>
-      <span id="news-toggle-label">최근뉴스</span>
-      <span id="news-toggle-arrow" class="news-toggle-arrow">▼</span>
-    </button>
-    <div id="news-panel" class="news-panel hidden">
-      <button type="button" id="news-refresh-btn" class="news-refresh-btn">
+    <div class="news-header">
+      <button type="button" id="news-toggle-btn" class="news-toggle-btn">
+        <svg class="news-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="3" y="4" width="14" height="16" rx="1" stroke="currentColor" stroke-width="2" />
+          <path d="M7 8h6M7 12h6M7 16h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path d="M17 8h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <span id="news-toggle-label">최근뉴스</span>
+        <span id="news-toggle-arrow" class="news-toggle-arrow">▼</span>
+      </button>
+      <button type="button" id="news-refresh-btn" class="news-refresh-icon-btn" aria-label="새로고침">
         <svg class="news-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M4 4v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           <path d="M20 20v-5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           <path d="M5.5 9A7 7 0 0 1 19 8M18.5 15A7 7 0 0 1 5 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-        <span id="news-refresh-label">새로고침</span>
       </button>
+    </div>
+    <div id="news-panel" class="news-panel hidden">
       <ul id="news-list" class="news-list"></ul>
     </div>
   </div>
