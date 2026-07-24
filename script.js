@@ -9,6 +9,8 @@ const listEl = document.getElementById("alarm-list");
 const overlay = document.getElementById("ringing-overlay");
 const ringingLabel = document.getElementById("ringing-label");
 const stopBtn = document.getElementById("stop-alarm");
+const saveNowBtn = document.getElementById("save-now-btn");
+const saveStatusEl = document.getElementById("save-status");
 
 const STORAGE_KEY = "alarms";
 let alarms = loadAlarms();
@@ -166,6 +168,33 @@ form.addEventListener("submit", (e) => {
   renderAlarms();
   form.reset();
 });
+
+async function saveAlarmsRemotely() {
+  if (saveStatusEl) saveStatusEl.textContent = "저장 중...";
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ alarms }),
+    });
+
+    const data = await res.json();
+    if (data.result === "success") {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const ss = String(now.getSeconds()).padStart(2, "0");
+      if (saveStatusEl) saveStatusEl.textContent = `저장되었습니다 (${hh}:${mm}:${ss})`;
+    } else {
+      if (saveStatusEl) saveStatusEl.textContent = "저장에 실패했습니다";
+    }
+  } catch {
+    if (saveStatusEl) saveStatusEl.textContent = "저장에 실패했습니다";
+  }
+}
+
+saveNowBtn.addEventListener("click", saveAlarmsRemotely);
 
 function updateClock() {
   const now = new Date();
