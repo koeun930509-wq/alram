@@ -169,7 +169,15 @@ form.addEventListener("submit", (e) => {
   form.reset();
 });
 
+const SAVED_SNAPSHOT_KEY = "alarms_last_saved";
+
 async function saveAlarmsRemotely() {
+  const currentSnapshot = JSON.stringify(alarms);
+  if (currentSnapshot === localStorage.getItem(SAVED_SNAPSHOT_KEY)) {
+    if (saveStatusEl) saveStatusEl.textContent = "이미 저장되어 있습니다";
+    return;
+  }
+
   if (saveStatusEl) saveStatusEl.textContent = "저장 중...";
 
   try {
@@ -181,6 +189,7 @@ async function saveAlarmsRemotely() {
 
     const data = await res.json();
     if (data.result === "success") {
+      localStorage.setItem(SAVED_SNAPSHOT_KEY, currentSnapshot);
       const now = new Date();
       const hh = String(now.getHours()).padStart(2, "0");
       const mm = String(now.getMinutes()).padStart(2, "0");
